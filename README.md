@@ -27,23 +27,23 @@ Once the extension is installed, simply use it in your code:
 ### Strict validate
 
 ```php
-    public function rules()
-    {
-        return [
-            [['image'], zakurdaev\imageratio\ImageRatioValidator::class, 'ratio' => 1600/1200],
-        ];
-    }
+public function rules()
+{
+    return [
+        [['image'], \zakurdaev\imageratio\ImageRatioValidator::class, 'ratio' => 1600/1200],
+    ];
+}
 ```
 
 ### Range validate
 
 ```php
-    public function rules()
-    {
-        return [
-            [['image'], zakurdaev\imageratio\ImageRatioValidator::class, 'ratioTo' => 1400/1200, 'ratioFrom' => 1600/1200],
-        ];
-    }
+public function rules()
+{
+    return [
+        [['image'], \zakurdaev\imageratio\ImageRatioValidator::class, 'ratioTo' => 1400/1200, 'ratioFrom' => 1600/1200],
+    ];
+}
 ```
 
 ## License
