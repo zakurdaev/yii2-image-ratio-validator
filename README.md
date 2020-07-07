@@ -30,7 +30,7 @@ Once the extension is installed, simply use it in your code:
     public function rules()
     {
         return [
-            [['image'], zakurdaev\imageratio\ImageRatioValidator::class, 'ratio' => 1600/1200],
+            [['image'], zakurdaev\imageratio\ImageRatioValidator::class, 'ratios' => 1600/1200],
         ];
     }
 ```
@@ -41,7 +41,21 @@ Once the extension is installed, simply use it in your code:
     public function rules()
     {
         return [
-            [['image'], zakurdaev\imageratio\ImageRatioValidator::class, 'ratioTo' => 1400/1200, 'ratioFrom' => 1600/1200],
+            [['image'], zakurdaev\imageratio\ImageRatioValidator::class, 'ratios' => ['from' => 1400/1200, 'to' => 1600/1200]],
+        ];
+    }
+```
+
+### Multiple validate
+
+```php
+    public function rules()
+    {
+        return [
+            [['image'], zakurdaev\imageratio\ImageRatioValidator::class, 'ratios' => [
+                [16/9],
+                ['from' => 100/50, 'to' => 150/50]
+            ]],
         ];
     }
 ```

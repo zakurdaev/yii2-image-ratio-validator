@@ -36,19 +36,14 @@ class ImageRatioValidator extends FileValidator
     public $wrongRatio;
 
     /**
-     * @var float image aspect ratio for comparison.
+     * @var array list of image aspect ratios for comparison.
+     *
+     * Usage:
+     * 16/9
+     * [16/9, 3/2]
+     * [['to' => 16/9, 'from' => 3/2]]
      */
-    public $ratio;
-
-    /**
-     * @var float minimum image aspect ratio for comparison.
-     */
-    public $ratioFrom;
-
-    /**
-     * @var float maximum image aspect ratio for comparison.
-     */
-    public $ratioTo;
+    public $ratios;
 
     /**
      * @var string translation message file category name for i18n.
@@ -119,22 +114,38 @@ class ImageRatioValidator extends FileValidator
             return [$this->notImage, ['file' => $image->name]];
         }
 
-        if (!is_null($this->ratio)) {
-            $currentRatio = round($width / $height, $this->precision($this->ratio));
-            $ratio = round($this->ratio, $this->precision($this->ratio));
-            if ($currentRatio != $ratio) {
-                return [$this->wrongRatio, ['file' => $image->name, 'ratio' => $currentRatio]];
+        $ratios = $this->ratios;
+        if (!is_array($ratios) || !isset($ratios[0])) {
+            $ratios = [$ratios];
+        }
+
+        $actualRatio = $width / $height;
+        $returnError = true;
+        foreach ($ratios as $ratio) {
+            if (is_array($ratio) || is_object($ratio)) {
+                $ratioFrom = ArrayHelper::getValue($ratio, 'from');
+                $ratioTo = ArrayHelper::getValue($ratio, 'to');
+
+                if (!is_numeric($ratioFrom) || !is_float($ratioFrom) || !is_numeric($ratioTo) || !is_float($ratioTo)) {
+                    return ['Incorect validation attribute `ratios`', []];
+                }
+
+                if ($this->validateRatioBetween($actualRatio, $ratioFrom, $ratioTo)) {
+                    $returnError = false;
+                }
+            } else {
+                if (!is_numeric($ratio) || !is_float($ratio)) {
+                    return ['Incorect validation attribute `ratios`', []];
+                }
+
+                if ($this->validateRatioEquality($actualRatio, $ratio)) {
+                    $returnError = false;
+                }
             }
-        } elseif (!is_null($this->ratioFrom) && !is_null($this->ratioTo)) {
-            $precisionTo = $this->precision($this->ratioTo);
-            $precisionFrom = $this->precision($this->ratioFrom);
-            $precision = $precisionTo > $precisionFrom ? $precisionTo : $precisionFrom;
-            $currentRatio = round($width / $height, $precision);
-            $ratioTo = round($this->ratioTo, $precision);
-            $ratioFrom = round($this->ratioFrom, $precision);
-            if ($currentRatio < $ratioTo || $currentRatio > $ratioFrom) {
-                return [$this->wrongRatio, ['file' => $image->name, 'ratio' => $currentRatio]];
-            }
+        }
+
+        if ($returnError) {
+            return [$this->wrongRatio, ['file' => $image->name, 'ratio' => round($actualRatio, 2)]];
         }
 
         return null;
@@ -142,7 +153,7 @@ class ImageRatioValidator extends FileValidator
 
     /**
      * Return decimal precision
-     * 
+     *
      * @param $number
      * @return int
      */
@@ -150,5 +161,25 @@ class ImageRatioValidator extends FileValidator
     {
         $explodeDigits = explode('.', (string)$number);
         return strlen((string)ArrayHelper::getValue($explodeDigits, 0, ''));
+    }
+
+    protected function validateRatioEquality($actualRatio, $checkedRatio) {
+        $precision = $this->precision( $checkedRatio);
+        $actualRatio = round($actualRatio, $precision);
+        $checkedRatio = round($checkedRatio, $precision);
+
+        return $actualRatio == $checkedRatio;
+    }
+
+    protected function validateRatioBetween($actualRatio, $ratioFrom, $ratioTo) {
+        $precisionFrom = $this->precision($ratioFrom);
+        $precisionTo = $this->precision($ratioTo);
+        $precision = $precisionTo > $precisionFrom ? $precisionTo : $precisionFrom;
+
+        $actualRatio = round($actualRatio, $precision);
+        $ratioFrom = round($ratioFrom, $precision);
+        $ratioTo = round($ratioTo, $precision);
+
+        return ($actualRatio > $ratioFrom && $actualRatio < $ratioTo);
     }
 }
