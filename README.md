@@ -53,7 +53,7 @@ Once the extension is installed, simply use it in your code:
     {
         return [
             [['image'], zakurdaev\imageratio\ImageRatioValidator::class, 'ratios' => [
-                [16/9],
+                16/9,
                 ['from' => 100/50, 'to' => 150/50]
             ]],
         ];
