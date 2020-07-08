@@ -121,12 +121,14 @@ class ImageRatioValidator extends FileValidator
 
         $actualRatio = $width / $height;
         $returnError = true;
+
+
         foreach ($ratios as $ratio) {
             if (is_array($ratio) || is_object($ratio)) {
                 $ratioFrom = ArrayHelper::getValue($ratio, 'from');
                 $ratioTo = ArrayHelper::getValue($ratio, 'to');
 
-                if (!is_numeric($ratioFrom) || !is_float($ratioFrom) || !is_numeric($ratioTo) || !is_float($ratioTo)) {
+                if ((!is_numeric($ratioFrom) && !is_float($ratioFrom)) || (!is_numeric($ratioTo) && !is_float($ratioTo))) {
                     return ['Incorect validation attribute `ratios`', []];
                 }
 
@@ -134,10 +136,10 @@ class ImageRatioValidator extends FileValidator
                     $returnError = false;
                 }
             } else {
-                if (!is_numeric($ratio) || !is_float($ratio)) {
+
+                if ((!is_numeric($ratio) && !is_float($ratio))) {
                     return ['Incorect validation attribute `ratios`', []];
                 }
-
                 if ($this->validateRatioEquality($actualRatio, $ratio)) {
                     $returnError = false;
                 }
